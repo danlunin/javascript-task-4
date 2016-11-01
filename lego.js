@@ -4,9 +4,17 @@
  * Сделано задание на звездочку
  * Реализованы методы or и and
  */
-exports.isStar = false;
+exports.isStar = true;
 
-var PRIORITY_LIST = ['format', 'limit', 'select', 'sortBy', 'and', 'or', 'filterIn'];
+var PRIORITY_DICT = {
+    'format': 0,
+    'limit': 1,
+    'select': 2,
+    'sortBy': 3,
+    'filterIn': 4,
+    'and': 4,
+    'or': 4
+};
 
 /**
  * Запрос к коллекции
@@ -18,7 +26,6 @@ exports.query = function (collection) {
     var copiedCollection = copyCollection(collection);
     var allArguments = [].slice.call(arguments);
     var queries = allArguments.slice(1);
-    console.info(queries);
 
     return queries
         .sort(sortByPriority)
@@ -28,8 +35,8 @@ exports.query = function (collection) {
 };
 
 function sortByPriority(firstFunction, secondFunction) {
-    var index1 = PRIORITY_LIST.indexOf(firstFunction.name);
-    var index2 = PRIORITY_LIST.indexOf(secondFunction.name);
+    var index1 = PRIORITY_DICT[firstFunction.name];
+    var index2 = PRIORITY_DICT[secondFunction.name];
     if (index1 === index2) {
         return 0;
     }
@@ -68,7 +75,6 @@ exports.select = function () {
 
             selectedCollection[selectedCollection.length] = filteredNote;
         });
-        console.info(selectedCollection);
 
         return selectedCollection;
     };
@@ -113,8 +119,6 @@ exports.sortBy = function (property, order) {
 
             return resultOfComparing * orderSign;
         });
-        console.info(sortedCollection);
-        console.info('***');
 
         return sortedCollection;
     };
@@ -136,7 +140,6 @@ exports.format = function (property, formatter) {
             newElement[property] = formatter(element[property]);
             newCollection[newCollection.length] = newElement;
         });
-        console.info(newCollection);
 
         return newCollection;
     };
@@ -148,7 +151,6 @@ exports.format = function (property, formatter) {
  * @returns {Array}
  */
 exports.limit = function (count) {
-    console.info(count);
 
     return function limit(collection) {
 
@@ -166,7 +168,6 @@ if (exports.isStar) {
      */
     exports.or = function () {
         var functions = [].slice.call(arguments);
-        console.info(functions);
 
         return function or(collection) {
             var copy = copyCollection(collection);
@@ -177,9 +178,6 @@ if (exports.isStar) {
                     return (result.indexOf(note) !== -1);
                 });
             });
-
-            console.info(filteredCollection);
-            console.info('********');
 
             return filteredCollection;
         };
@@ -195,6 +193,7 @@ if (exports.isStar) {
         var functions = [].slice.call(arguments);
 
         return function and(collection) {
+
             return functions.reduce(function (friends, filterFunction) {
                 return filterFunction(friends);
 
