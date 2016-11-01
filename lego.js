@@ -170,7 +170,7 @@ if (exports.isStar) {
         var functions = [].slice.call(arguments);
 
         return function or(collection) {
-            var copy = copyCollection(collection);
+            var copy = collection.slice();
             var filteredCollection = copy.filter(function (note) {
                 return functions.some(function (filterFunction) {
                     var result = filterFunction(copy);
@@ -197,7 +197,7 @@ if (exports.isStar) {
             return functions.reduce(function (friends, filterFunction) {
                 return filterFunction(friends);
 
-            }, collection);
+            }, collection.slice());
         };
     };
 }
