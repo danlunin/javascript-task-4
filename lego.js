@@ -24,17 +24,17 @@ var PRIORITY_DICT = {
  */
 exports.query = function (collection) {
     var copiedCollection = copyCollection(collection);
-    var allArguments = [].slice.call(arguments);
-    var queries = allArguments.slice(1);
+    var queries = [].slice.call(arguments, 1);
 
     return queries
         .sort(sortByPriority)
-        .reduce(function (param, quer) {
-            return quer(param);
+        .reduce(function (parameter, currentFunction) {
+            return currentFunction(parameter);
         }, copiedCollection);
 };
 
 function sortByPriority(firstFunction, secondFunction) {
+
     var index1 = PRIORITY_DICT[firstFunction.name];
     var index2 = PRIORITY_DICT[secondFunction.name];
     if (index1 === index2) {
@@ -45,13 +45,12 @@ function sortByPriority(firstFunction, secondFunction) {
 }
 
 function copyCollection(collection) {
-    var copiedCollection = [];
-    collection.forEach(function (element) {
-        var copiedElement = Object.assign({}, element);
-        copiedCollection[copiedCollection.length] = copiedElement;
-    });
 
-    return copiedCollection;
+    return collection.map(function (element) {
+        var copiedElement = Object.assign({}, element);
+
+        return copiedElement;
+    });
 }
 
 /**
@@ -63,8 +62,7 @@ exports.select = function () {
     var necessaryFields = [].slice.call(arguments);
 
     return function select(collection) {
-        var selectedCollection = [];
-        collection.forEach(function (note) {
+        return collection.map(function (note) {
             var allFields = Object.keys(note);
             var filteredNote = {};
             allFields.forEach(function (field) {
@@ -73,10 +71,9 @@ exports.select = function () {
                 }
             });
 
-            selectedCollection[selectedCollection.length] = filteredNote;
+            return filteredNote;
         });
 
-        return selectedCollection;
     };
 };
 
@@ -90,14 +87,11 @@ exports.filterIn = function (property, values) {
     console.info(property, values);
 
     return function filterIn(collection) {
-        var filteredCollection = [];
-        collection.forEach(function (note) {
-            if (values.indexOf(note[property]) !== -1) {
-                filteredCollection[filteredCollection.length] = note;
-            }
+        return collection.filter(function (note) {
+            return values.some(function (value) {
+                return value === note[property];
+            });
         });
-
-        return filteredCollection;
     };
 };
 
@@ -109,7 +103,6 @@ exports.filterIn = function (property, values) {
  */
 exports.sortBy = function (property, order) {
     return function sortBy(collection) {
-
         var sortedCollection = collection.sort(function (first, second) {
             if (first[property] === second[property]) {
                 return 0;
@@ -134,16 +127,16 @@ exports.format = function (property, formatter) {
     console.info(property, formatter);
 
     return function format(collection) {
-        var newCollection = [];
-        collection.forEach(function (element) {
+
+        return collection.map(function (element) {
             var newElement = Object.assign({}, element);
             newElement[property] = formatter(element[property]);
-            newCollection[newCollection.length] = newElement;
-        });
 
-        return newCollection;
+            return newElement;
+        });
     };
 };
+
 
 /**
  * Ограничение количества элементов в коллекции
