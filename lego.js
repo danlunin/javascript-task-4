@@ -23,7 +23,7 @@ var PRIORITY_DICT = {
  * @returns {Array}
  */
 exports.query = function (collection) {
-    var copiedCollection = copyCollection(collection);
+    var copiedCollection = collection.slice();
     var queries = [].slice.call(arguments, 1);
 
     return queries
@@ -34,7 +34,6 @@ exports.query = function (collection) {
 };
 
 function sortByPriority(firstFunction, secondFunction) {
-
     var index1 = PRIORITY_DICT[firstFunction.name];
     var index2 = PRIORITY_DICT[secondFunction.name];
     if (index1 === index2) {
@@ -44,14 +43,6 @@ function sortByPriority(firstFunction, secondFunction) {
     return (index1 > index2) ? -1 : 1;
 }
 
-function copyCollection(collection) {
-
-    return collection.map(function (element) {
-        var copiedElement = Object.assign({}, element);
-
-        return copiedElement;
-    });
-}
 
 /**
  * Выбор полей
