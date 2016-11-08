@@ -7,14 +7,23 @@
 exports.isStar = true;
 
 var PRIORITY_DICT = {
-    'format': 0,
-    'limit': 1,
-    'select': 2,
-    'sortBy': 3,
-    'filterIn': 4,
-    'and': 4,
-    'or': 4
+    format: 10,
+    limit: 20,
+    select: 30,
+    sortBy: 40,
+    filterIn: 50,
+    and: 50,
+    or: 50
 };
+
+function copyElement(element) {
+    var copiedElement = {};
+    Object.keys(element).forEach(function (field) {
+        copiedElement[field] = element[field];
+    });
+
+    return copiedElement;
+}
 
 /**
  * Запрос к коллекции
@@ -79,9 +88,7 @@ exports.filterIn = function (property, values) {
 
     return function filterIn(collection) {
         return collection.filter(function (note) {
-            return values.some(function (value) {
-                return value === note[property];
-            });
+            return values.indexOf(note[property]) !== -1;
         });
     };
 };
@@ -118,9 +125,8 @@ exports.format = function (property, formatter) {
     console.info(property, formatter);
 
     return function format(collection) {
-
         return collection.map(function (element) {
-            var newElement = Object.assign({}, element);
+            var newElement = copyElement(element);
             newElement[property] = formatter(element[property]);
 
             return newElement;
@@ -135,9 +141,7 @@ exports.format = function (property, formatter) {
  * @returns {Array}
  */
 exports.limit = function (count) {
-
     return function limit(collection) {
-
         return collection.slice(0, count);
     };
 };
@@ -177,11 +181,14 @@ if (exports.isStar) {
         var functions = [].slice.call(arguments);
 
         return function and(collection) {
+            var copy = collection.slice();
 
-            return functions.reduce(function (friends, filterFunction) {
-                return filterFunction(friends);
-
-            }, collection.slice());
+            return copy.filter(function (note) {
+                return functions.every(function (filterFunction) {
+                    return filterFunction(copy).indexOf(note) !== -1;
+                });
+            });
         };
     };
 }
+
